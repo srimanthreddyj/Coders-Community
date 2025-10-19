@@ -3,19 +3,29 @@ import User from "../models/User.js";
 /**
  * Fetches and sorts leaderboard data.
  * @param {string} [platform] - Optional platform to filter by (e.g., 'codeforces').
+ * @param {string} [sortBy='solved'] - The field to sort by ('solved' or 'rating').
  * @returns {Promise<User[]>} - A sorted list of users.
  */
-export const getLeaderboardData = async (platform) => {
+export const getLeaderboardData = async (platform, sortBy = 'solved') => {
   // Validate the platform to prevent sorting on arbitrary fields
   const allowedPlatforms = ["codeforces", "leetcode", "codechef"];
   const isValidPlatform = platform && allowedPlatforms.includes(platform);
 
-  // Determine the sort key based on the platform query parameter
-  const sortKey = isValidPlatform ? `solvedCounts.${platform}` : "solvedCounts.total";
+  let sortKey;
+  let fieldsToSelect = "username";
+
+  if (sortBy === 'rating' && isValidPlatform) {
+    sortKey = `ratings.${platform}`;
+    fieldsToSelect += " ratings";
+  } else {
+    // Default to sorting by solved counts
+    sortKey = isValidPlatform ? `solvedCounts.${platform}` : "solvedCounts.total";
+    fieldsToSelect += " solvedCounts";
+  }
 
   // Find users, select necessary fields, sort, and limit the results
   const leaderboard = await User.find({})
-    .select("username solvedCounts")
+    .select(fieldsToSelect)
     .sort({ [sortKey]: -1 })
     .limit(100); // Limit to top 100 users
 

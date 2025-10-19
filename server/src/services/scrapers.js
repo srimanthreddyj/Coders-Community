@@ -237,38 +237,6 @@ export async function fetchCodeforcesUser(handle) {
 }
 
 /**
- * Fetches the number of problems solved by a user on LeetCode.
- * @param {string} handle - The LeetCode user handle.
- * @returns {Promise<number>} The number of problems solved.
- */
-export async function scrapeLeetCodeUser(handle) {
-  if (!handle) return 0;
-  try {
-    const response = await axios.post("https://leetcode.com/graphql", {
-      query: `
-        query getUserProfile($username: String!) {
-          matchedUser(username: $username) {
-            submitStats: submitStatsGlobal {
-              acSubmissionNum {
-                difficulty
-                count
-              }
-            }
-          }
-        }
-      `,
-      variables: { username: handle },
-    });
-    const stats = response.data.data.matchedUser?.submitStats?.acSubmissionNum;
-    if (!stats) return 0;
-    return stats.find(s => s.difficulty === "All")?.count || 0;
-  } catch (error) {
-    console.error(`Failed to fetch LeetCode user ${handle}:`, error.message);
-    return 0;
-  }
-}
-
-/**
  * Scrapes the number of fully solved problems by a user on CodeChef.
  * @param {string} handle - The CodeChef user handle.
  * @returns {Promise<number>} The number of problems solved.
@@ -306,5 +274,125 @@ export async function scrapeCodeChefUser(handle) {
     return 0;
   } finally {
     if (browser) await browser.close();
+  }
+}
+
+/**
+ * Fetches the contest rating for a user on Codeforces.
+ * @param {string} handle - The Codeforces user handle.
+ * @returns {Promise<number>} The user's rating.
+ */
+export async function fetchCodeforcesUserRating(handle) {
+  if (!handle) return 0;
+  try {
+    const response = await axios.get(
+      `https://codeforces.com/api/user.info?handles=${handle}`
+    );
+    if (response.data.status !== "OK") {
+      console.error(`Codeforces API error for ${handle}:`, response.data.comment);
+      return 0;
+    }
+    // The API returns an array, we take the first user.
+    return response.data.result[0]?.rating || 0;
+  } catch (error) {
+    console.error(`Failed to fetch Codeforces rating for ${handle}:`, error.message);
+    return 0;
+  }
+}
+
+/**
+ * Scrapes the contest rating for a user on CodeChef.
+ * @param {string} handle - The CodeChef user handle.
+ * @returns {Promise<number>} The user's rating.
+ */
+export async function scrapeCodeChefUserRating(handle) {
+  if (!handle) return 0;
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    const page = await browser.newPage();
+    await page.goto(`https://www.codechef.com/users/${handle}`);
+
+    await page.waitForSelector('.rating-number');
+
+    const rating = await page.evaluate(() => {
+      const ratingElement = document.querySelector('.rating-number');
+      return ratingElement ? parseInt(ratingElement.innerText, 10) : 0;
+    });
+
+    return rating;
+  } catch (error) {
+    console.error(`Failed to scrape CodeChef rating for ${handle}:`, error.message);
+    return 0;
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
+/**
+ * Fetches comprehensive user data from LeetCode using a single GraphQL query.
+ * @param {string} handle - The LeetCode user handle.
+ * @returns {Promise<{solvedCount: number, rating: number}>} An object with solved count and rating.
+ */
+export async function fetchLeetCodeUserData(handle) {
+  if (!handle) {
+    return { solvedCount: 0, rating: 0 };
+  }
+
+  const query = `
+    query getUserProfile($username: String!) {
+      matchedUser(username: $username) {
+        submitStats: submitStatsGlobal {
+          acSubmissionNum {
+            difficulty
+            count
+          }
+        }
+      }
+      userContestRanking(username: $username) {
+        rating
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(
+      "https://leetcode.com/graphql",
+      {
+        query,
+        variables: { username: handle },
+      },
+      {
+        headers: {
+          "Referer": `https://leetcode.com/${handle}/`,
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.errors) {
+      console.error(`LeetCode API error for ${handle}:`, response.data.errors[0].message);
+      return { solvedCount: 0, rating: 0 };
+    }
+
+    const data = response.data.data;
+    if (!data.matchedUser) {
+      return { solvedCount: 0, rating: 0 };
+    }
+
+    const solvedStats = data.matchedUser.submitStats.acSubmissionNum;
+    const solvedCount = solvedStats.find(s => s.difficulty === 'All')?.count || 0;
+    const rating = Math.round(data.userContestRanking?.rating || 0);
+
+    return { solvedCount, rating };
+
+  } catch (error) {
+    console.error(`Failed to fetch LeetCode data for ${handle}:`, error.message);
+    return { solvedCount: 0, rating: 0 };
   }
 }

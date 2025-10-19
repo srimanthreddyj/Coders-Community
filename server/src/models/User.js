@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
       leetcode: { type: String },
       codechef: { type: String },
     },
+    ratings: {
+      codeforces: { type: Number, default: 0, index: -1 },
+      leetcode: { type: Number, default: 0, index: -1 },
+      codechef: { type: Number, default: 0, index: -1 },
+    },
     // This would be populated by a separate service that fetches user stats
     solvedCounts: {
       codeforces: { type: Number, default: 0 },

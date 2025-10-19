@@ -1,0 +1,110 @@
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--accent-primary);
+}
+
+.profileCard {
+  background-color: var(--background-secondary);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.subHeader {
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.infoSection p,
+.handlesSection p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.infoSection p strong,
+.handlesSection p strong {
+  color: var(--text-secondary);
+  min-width: 120px;
+  display: inline-block;
+}
+
+.button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 1px solid var(--accent-primary);
+  border-radius: 5px;
+  background-color: var(--accent-primary);
+  color: #fff;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.button:hover {
+  background-color: #8e24aa;
+  border-color: #8e24aa;
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: var(--accent-primary);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.formControl {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--background-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.message {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.error {
+  color: var(--error-color);
+}
+
+.successMessage {
+  text-align: center;
+  color: var(--success-color);
+  background-color: rgba(39, 174, 96, 0.1);
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}

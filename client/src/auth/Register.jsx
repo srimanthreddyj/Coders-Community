@@ -29,7 +29,7 @@ export default function Register() {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 520 }}>
+    <div className="container-fluid mt-5" style={{ padding: "0 2rem", width: "100%" }}>
       <h3>Create Account</h3>
       {err && <div className="alert alert-danger">{err}</div>}
       <form onSubmit={submit}>
